@@ -1,29 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Live Follower Counters</title>
+  <title>Follower Counters</title>
+  <style>
+    /* Some basic styling */
+    #youtubeCounter, #tiktokCounter {
+      margin: 20px auto;
+      padding: 10px;
+      border: 2px solid #ccc;
+      width: 320px;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+  </style>
 </head>
 <body>
-  <iframe id="youtubeCounter" src="https://livecounts.io/youtube-live-subscriber-count/UCQHUpo1il1OaKFUqEN68Q3w" title="YouTube"></iframe>
-  <iframe height="80px" width="300px" frameborder="0" src="https://livecounts.io/embed/tiktok-live-follower-counter/cyberbycallum" style="border: 0; width:300px; height:80px;"></iframe>
-  <iframe id="instagramCounter" src="https://livecounts.io/instagram-live-follower-count/cyberbycallum" title="Instagram"></iframe>
+
+  <div id="youtubeCounter">
+    <h3>YouTube Subscribers</h3>
+    <div id="subCount">Loading...</div>
+  </div>
+
+  <div id="tiktokCounter">
+    <h3>TikTok Followers</h3>
+    <iframe height="80px" width="300px" frameborder="0"
+      src="https://livecounts.io/embed/tiktok-live-follower-counter/cyberbycallum"
+      style="border: 0; width:300px; height:80px;"></iframe>
+  </div>
 
   <script>
-    function refreshIframe(id) {
-      const iframe = document.getElementById(id);
-      if (iframe) {
-        const src = iframe.src;
-        iframe.src = '';      // clear src to force reload
-        iframe.src = src;     // reset src to original to reload iframe content
+    const apiKey = 'YOUR_YOUTUBE_API_KEY';  // Replace with your API key
+    const channelId = 'UCQHUpo1il1OaKFUqEN68Q3w';
+
+    async function fetchSubscriberCount() {
+      try {
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`);
+        const data = await response.json();
+        const count = data.items[0].statistics.subscriberCount;
+        document.getElementById('subCount').textContent = count;
+      } catch (error) {
+        document.getElementById('subCount').textContent = 'Error loading count';
+        console.error(error);
       }
     }
 
-    setInterval(() => {
-      refreshIframe('youtubeCounter');
-      refreshIframe('tiktokCounter');
-      refreshIframe('instagramCounter');
-    }, 10000); // refresh every 10 seconds
+    fetchSubscriberCount();
+    setInterval(fetchSubscriberCount, 15000); // refresh every 15 seconds
   </script>
+
 </body>
 </html>
