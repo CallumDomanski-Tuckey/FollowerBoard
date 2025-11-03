@@ -1,51 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Follower Counters</title>
+  <meta charset="UTF-8" />
+  <title>Live Follower Counters</title>
   <style>
-    /* Some basic styling */
-    #youtubeCounter, #tiktokCounter {
-      margin: 20px auto;
-      padding: 10px;
-      border: 2px solid #ccc;
-      width: 320px;
-      text-align: center;
+    body {
       font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .counter-container {
+      margin: 20px auto;
+      width: 320px;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+    }
+    .counter-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.2em;
+    }
+    #subCount {
+      font-size: 2em;
+      color: #ff0000;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
 
-  <div id="youtubeCounter">
-    <h3>YouTube Subscribers</h3>
+  <div class="counter-container" id="youtubeCounter">
+    <div class="counter-title">YouTube Subscribers</div>
     <div id="subCount">Loading...</div>
   </div>
 
-  <div id="tiktokCounter">
-    <h3>TikTok Followers</h3>
+  <div class="counter-container" id="tiktokCounter">
+    <div class="counter-title">TikTok Followers</div>
+    <!-- TikTok live follower counter iframe -->
     <iframe height="80px" width="300px" frameborder="0"
       src="https://livecounts.io/embed/tiktok-live-follower-counter/cyberbycallum"
-      style="border: 0; width:300px; height:80px;"></iframe>
+      style="border:0; width:300px; height:80px;">
+    </iframe>
   </div>
 
   <script>
-    const apiKey = 'YOUR_YOUTUBE_API_KEY';  // Replace with your API key
+    const apiKey = 'AIzaSyALcqdTppYUTHuvLtknyqJOq1Ss5EujIN0';
     const channelId = 'UCQHUpo1il1OaKFUqEN68Q3w';
+
+    let previousCount = null;
+    const cheerAudio = new Audio('https://actions.google.com/sounds/v1/human_voices/applause.ogg');
 
     async function fetchSubscriberCount() {
       try {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`);
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`
+        );
         const data = await response.json();
-        const count = data.items[0].statistics.subscriberCount;
-        document.getElementById('subCount').textContent = count;
+        const count = parseInt(data.items[0].statistics.subscriberCount);
+
+        const subCountElem = document.getElementById('subCount');
+
+        // Flip animation effect
+        if (previousCount !== null && count !== previousCount) {
+          // Modify this with your flip animation logic if desired
+          subCountElem.style.opacity = 0;
+          setTimeout(() => {
+            subCountElem.textContent = count.toLocaleString();
+            subCountElem.style.opacity = 1;
+          }, 300);
+
+          // Play cheer sound if follower count increased
+          if (count > previousCount) {
+            cheerAudio.play();
+          }
+        } else if (previousCount === null) {
+          subCountElem.textContent = count.toLocaleString();
+        }
+
+        previousCount = count;
       } catch (error) {
         document.getElementById('subCount').textContent = 'Error loading count';
-        console.error(error);
+        console.error("Failed to fetch YouTube subscriber count:", error);
       }
     }
 
     fetchSubscriberCount();
-    setInterval(fetchSubscriberCount, 15000); // refresh every 15 seconds
+    setInterval(fetchSubscriberCount, 15000);
   </script>
 
 </body>
